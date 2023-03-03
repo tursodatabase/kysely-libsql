@@ -1,0 +1,6 @@
+node_modules
+/lib-esm
+/lib-cjs
+package-lock.json
+*.tsbuildinfo
+Session.vim

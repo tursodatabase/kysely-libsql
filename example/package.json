@@ -1,0 +1,15 @@
+{
+    "type": "commonjs",
+
+    "dependencies": {
+        "@libsql/kysely-libsql": "..",
+        "@libsql/hrana-client": "^0.1.0"
+    },
+    "devDependencies": {
+        "ts-node": "^10.9.1"
+    },
+
+    "scripts": {
+        "example": "ts-node index.ts"
+    }
+}

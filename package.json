@@ -1,0 +1,58 @@
+{
+  "name": "@libsql/kysely-libsql",
+  "version": "0.1.0-pre",
+  "keywords": [
+    "hrana",
+    "libsql",
+    "sqld",
+    "database",
+    "kysely"
+  ],
+  "description": "Kysely dialect for sqld",
+  "repository": {
+    "type": "git",
+    "url": "github:libsql/kysely-libsql"
+  },
+  "homepage": "https://github.com/libsql/kysely-libsql",
+  "authors": [
+    "Jan Špaček <honza@chiselstrike.com>"
+  ],
+  "license": "MIT",
+
+  "type": "module",
+  "main": "lib-cjs/index.js",
+  "types": "lib-esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib-esm/index.d.ts",
+      "import": "./lib-esm/index.js",
+      "require": "./lib-cjs/index.js"
+    }
+  },
+  "files": [
+    "lib-cjs/**",
+    "lib-esm/**"
+  ],
+
+  "scripts": {
+    "prebuild": "rm -rf ./lib-cjs ./lib-esm",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p tsconfig.build-cjs.json",
+    "build:esm": "tsc -p tsconfig.build-esm.json",
+    "postbuild": "cp package-cjs.json ./lib-cjs/package.json",
+    "test": "jest"
+  },
+
+  "dependencies": {
+    "@libsql/hrana-client": "^0.1.0"
+  },
+  "peerDependencies": {
+    "kysely": "*"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.4.0",
+    "jest": "^29.4.0",
+    "ts-jest": "^29.0.5",
+    "typescript": "^4.9.4"
+  }
+}

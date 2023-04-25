@@ -8,7 +8,7 @@
     "database",
     "kysely"
   ],
-  "description": "Kysely dialect for sqld",
+  "description": "Kysely dialect for libSQL",
   "repository": {
     "type": "git",
     "url": "github:libsql/kysely-libsql"

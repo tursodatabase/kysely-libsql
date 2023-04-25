@@ -1,6 +1,6 @@
 {
   "name": "@libsql/kysely-libsql",
-  "version": "0.2.0-pre",
+  "version": "0.2.1-pre",
   "keywords": [
     "hrana",
     "libsql",

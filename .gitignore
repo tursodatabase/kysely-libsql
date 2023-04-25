@@ -1,6 +1,6 @@
 node_modules
 /lib-esm
 /lib-cjs
-package-lock.json
+/example/package-lock.json
 *.tsbuildinfo
 Session.vim

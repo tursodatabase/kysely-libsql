@@ -15,12 +15,12 @@ interface BookTable {
 async function example() {
     const db = new Kysely<Database>({
         dialect: new LibsqlDialect({
-            url: "ws://localhost:2023",
+            url: "ws://localhost:8080",
         }),
     });
 
     /*
-    const client = hrana.open("ws://localhost:2023");
+    const client = hrana.open("ws://localhost:8080");
     const db = new Kysely<Database>({
         dialect: new LibsqlDialect({ client }),
     });

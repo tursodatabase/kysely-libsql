@@ -2,8 +2,7 @@
     "type": "commonjs",
 
     "dependencies": {
-        "@libsql/kysely-libsql": "..",
-        "@libsql/hrana-client": "^0.1.0"
+        "@libsql/kysely-libsql": ".."
     },
     "devDependencies": {
         "ts-node": "^10.9.1"

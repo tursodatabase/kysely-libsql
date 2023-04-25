@@ -38,4 +38,7 @@ const client = hrana.open("ws://localhost:2023");
 const db = new Kysely<Database>({
     dialect: new LibsqlDialect({ client }),
 });
+
+// after you are done with the `db`, you must close the `client`:
+client.close();
 ```

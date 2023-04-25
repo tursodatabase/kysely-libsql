@@ -6,22 +6,14 @@ export * as hrana from "@libsql/hrana-client";
 export interface LibsqlDialectConfig {
     client?: hrana.Client,
     url?: string,
-    jwt?: string,
+    authToken?: string,
 }
 
 export class LibsqlDialect implements kysely.Dialect {
     #config: LibsqlDialectConfig
-    #client: hrana.Client
 
     constructor(config: LibsqlDialectConfig) {
         this.#config = config;
-        if (this.#config.client !== undefined) {
-            this.#client = this.#config.client;
-        } else if (this.#config.url !== undefined) {
-            this.#client = hrana.open(this.#config.url, this.#config.jwt);
-        } else {
-            throw new Error("Please specify either `client` or `url` in the LibsqlDialect config");
-        }
     }
 
     createAdapter(): kysely.DialectAdapter {
@@ -29,7 +21,21 @@ export class LibsqlDialect implements kysely.Dialect {
     }
 
     createDriver(): kysely.Driver {
-        return new HranaDriver(this.#client);
+        let client: hrana.Client;
+        let closeClient: boolean;
+        if (this.#config.client !== undefined) {
+            client = this.#config.client;
+            closeClient = false;
+        } else if (this.#config.url !== undefined) {
+            const parsedUrl = hrana.parseLibsqlUrl(this.#config.url)
+            const authToken = this.#config.authToken ?? parsedUrl.authToken;
+            client = hrana.open(parsedUrl.hranaUrl, authToken);
+            closeClient = true;
+        } else {
+            throw new Error("Please specify either `client` or `url` in the LibsqlDialect config");
+        }
+
+        return new HranaDriver(client, closeClient);
     }
 
     createIntrospector(db: kysely.Kysely<any>): kysely.DatabaseIntrospector {
@@ -42,10 +48,12 @@ export class LibsqlDialect implements kysely.Dialect {
 }
 
 export class HranaDriver implements kysely.Driver {
-    client: hrana.Client
+    client: hrana.Client;
+    #closeClient: boolean;
 
-    constructor(client: hrana.Client) {
+    constructor(client: hrana.Client, closeClient: boolean) {
         this.client = client;
+        this.#closeClient = closeClient;
     }
 
     async init(): Promise<void> {
@@ -59,15 +67,15 @@ export class HranaDriver implements kysely.Driver {
         connection: HranaConnection,
         _settings: kysely.TransactionSettings,
     ): Promise<void> {
-        await connection.stream.execute("BEGIN");
+        await connection.stream.run("BEGIN");
     }
 
     async commitTransaction(connection: HranaConnection): Promise<void> {
-        await connection.stream.execute("COMMIT");
+        await connection.stream.run("COMMIT");
     }
 
     async rollbackTransaction(connection: HranaConnection): Promise<void> {
-        await connection.stream.execute("ROLLBACK");
+        await connection.stream.run("ROLLBACK");
     }
 
     async releaseConnection(connection: HranaConnection): Promise<void> {
@@ -75,7 +83,9 @@ export class HranaDriver implements kysely.Driver {
     }
 
     async destroy(): Promise<void> {
-        this.client.close();
+        if (this.#closeClient) {
+            this.client.close();
+        }
     }
 }
 
@@ -87,11 +97,12 @@ export class HranaConnection implements kysely.DatabaseConnection {
     }
 
     async executeQuery<R>(compiledQuery: kysely.CompiledQuery): Promise<kysely.QueryResult<R>> {
-        const stmt: hrana.Stmt = [compiledQuery.sql, compiledQuery.parameters as Array<hrana.Value>];
-        const rowArray = await this.stream.query(stmt);
+        const stmt = new hrana.Stmt(compiledQuery.sql);
+        stmt.bindIndexes(compiledQuery.parameters as Array<hrana.InValue>);
+        const rowsResult = await this.stream.query(stmt);
         return {
-            numAffectedRows: BigInt(rowArray.rowsAffected),
-            rows: rowArray,
+            numAffectedRows: BigInt(rowsResult.affectedRowCount),
+            rows: rowsResult.rows as R[],
         };
     }
 

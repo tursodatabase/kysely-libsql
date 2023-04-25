@@ -1,6 +1,6 @@
 {
   "name": "@libsql/kysely-libsql",
-  "version": "0.1.1-pre",
+  "version": "0.2.0-pre",
   "keywords": [
     "hrana",
     "libsql",
@@ -44,7 +44,7 @@
   },
 
   "dependencies": {
-    "@libsql/hrana-client": "^0.1.0"
+    "@libsql/hrana-client": "^0.3.7"
   },
   "peerDependencies": {
     "kysely": "*"

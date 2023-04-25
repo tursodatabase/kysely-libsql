@@ -11,9 +11,9 @@ interface Database {
 }
 
 test("it works", async () => {
-    const client = hrana.open("ws://localhost:2023");
+    const client = hrana.open("ws://localhost:8080");
     const s = client.openStream();
-    await s.execute("CREATE TABLE book (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT)");
+    await s.run("CREATE TABLE book (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT)");
     s.close();
 
     const db = new Kysely<Database>({
@@ -34,4 +34,5 @@ test("it works", async () => {
     expect(book!.title).toStrictEqual("Pride and Prejudice");
 
     await db.destroy();
+    client.close();
 });

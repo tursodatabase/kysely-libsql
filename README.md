@@ -27,7 +27,7 @@ interface Database {
 const db = new Kysely<Database>({
     dialect: new LibsqlDialect({
         url: "ws://localhost:8080",
-        jwt: "<jwt>", // optional
+        authToken: "<token>", // optional
     }),
 });
 ```

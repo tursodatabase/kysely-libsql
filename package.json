@@ -1,6 +1,6 @@
 {
   "name": "@libsql/kysely-libsql",
-  "version": "0.2.1-pre",
+  "version": "0.3.0-pre",
   "keywords": [
     "hrana",
     "libsql",
@@ -41,11 +41,11 @@
     "build:cjs": "tsc -p tsconfig.build-cjs.json",
     "build:esm": "tsc -p tsconfig.build-esm.json",
     "postbuild": "cp package-cjs.json ./lib-cjs/package.json",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
 
   "dependencies": {
-    "@libsql/hrana-client": "^0.3.7"
+    "@libsql/hrana-client": "^0.4.0"
   },
   "peerDependencies": {
     "kysely": "*"

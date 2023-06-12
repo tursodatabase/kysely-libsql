@@ -28,8 +28,12 @@ export class LibsqlDialect implements kysely.Dialect {
             closeClient = false;
         } else if (this.#config.url !== undefined) {
             const parsedUrl = hrana.parseLibsqlUrl(this.#config.url)
-            const authToken = this.#config.authToken ?? parsedUrl.authToken;
-            client = hrana.open(parsedUrl.hranaUrl, authToken);
+            const authToken = parsedUrl.authToken ?? this.#config.authToken;
+            if (parsedUrl.hranaHttpUrl !== undefined) {
+                client = hrana.openHttp(parsedUrl.hranaHttpUrl, authToken);
+            } else {
+                client = hrana.openWs(parsedUrl.hranaWsUrl!, authToken);
+            }
             closeClient = true;
         } else {
             throw new Error("Please specify either `client` or `url` in the LibsqlDialect config");
@@ -67,7 +71,7 @@ export class HranaDriver implements kysely.Driver {
         connection: HranaConnection,
         _settings: kysely.TransactionSettings,
     ): Promise<void> {
-        await connection.stream.run("BEGIN");
+        await connection.stream.run("BEGIN IMMEDIATE");
     }
 
     async commitTransaction(connection: HranaConnection): Promise<void> {
@@ -110,6 +114,6 @@ export class HranaConnection implements kysely.DatabaseConnection {
         _compiledQuery: kysely.CompiledQuery,
         _chunkSize: number,
     ): AsyncIterableIterator<kysely.QueryResult<R>> {
-        throw new Error("Hrana protocol for sqld does not support streaming yet");
+        throw new Error("Hrana protocol does not support streaming yet");
     }
 }

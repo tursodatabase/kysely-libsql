@@ -26,7 +26,7 @@ interface Database {
 
 const db = new Kysely<Database>({
     dialect: new LibsqlDialect({
-        url: "ws://localhost:8080",
+        url: "libsql://localhost:8080?tls=0",
         authToken: "<token>", // optional
     }),
 });
@@ -51,8 +51,15 @@ client.close();
 
 ## Supported URLs
 
-This library is based directly on the WebSocket client, so it only supports [`ws:`, `wss:` and `libsql:` URLs][supported-urls]. Connecting to a local SQLite file is not supported; we suggest that you use the native Kysely dialect for SQLite.
+The library accepts the [same URL schemas][supported-urls] as [`@libsql/client`][libsql-client-ts] except `file:`:
 
+- `http://` and `https://` connect to a libsql server over HTTP,
+- `ws://` and `wss://` connect to the server over WebSockets,
+- `libsql://` connects to the server using the default protocol (which is now HTTP). `libsql://` URLs use TLS by default, but you can use `?tls=0` to disable TLS (e.g. when you run your own instance of the server locally).
+
+Connecting to a local SQLite file using `file:` URL is not supported; we suggest that you use the native Kysely dialect for SQLite.
+
+[libsql-client-ts]: https://github.com/libsql/libsql-client-ts
 [supported-urls]: https://github.com/libsql/libsql-client-ts#supported-urls
 
 ## License

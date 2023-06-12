@@ -37,7 +37,14 @@ jobs:
 
     - name: "Build"
       run: "npm run build"
-    - name: "Test"
-      run: "python hrana-test-server/test_server.py npm test"
+    - name: "Test with Hrana 1 over WebSocket"
+      run: "python hrana-test-server/server_v1.py npm test"
+      env: {"URL": "ws://localhost:8080"}
+    - name: "Test with Hrana 2 over WebSocket"
+      run: "python hrana-test-server/server_v2.py npm test"
+      env: {"URL": "ws://localhost:8080"}
+    - name: "Test with Hrana 2 over HTTP"
+      run: "python hrana-test-server/server_v2.py npm test"
+      env: {"URL": "http://localhost:8080"}
     - name: "Example"
-      run: "cd example && npm link .. && python ../hrana-test-server/test_server.py npm run example"
+      run: "cd example && npm link .. && python ../hrana-test-server/server_v2.py npm run example"

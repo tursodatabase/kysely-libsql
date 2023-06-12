@@ -19,13 +19,6 @@ async function example() {
         }),
     });
 
-    /*
-    const client = hrana.open("ws://localhost:8080");
-    const db = new Kysely<Database>({
-        dialect: new LibsqlDialect({ client }),
-    });
-    */
-
     await db.schema
         .createTable("book")
         .addColumn("id", "integer", col => col.primaryKey())

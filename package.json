@@ -18,7 +18,6 @@
     "Jan Špaček <honza@chiselstrike.com>"
   ],
   "license": "MIT",
-
   "type": "module",
   "main": "lib-cjs/index.js",
   "types": "lib-esm/index.d.ts",
@@ -33,7 +32,6 @@
     "lib-cjs/**",
     "lib-esm/**"
   ],
-
   "scripts": {
     "prepublishOnly": "npm run build",
     "prebuild": "rm -rf ./lib-cjs ./lib-esm",
@@ -43,9 +41,8 @@
     "postbuild": "cp package-cjs.json ./lib-cjs/package.json",
     "test": "jest --runInBand"
   },
-
   "dependencies": {
-    "@libsql/hrana-client": "^0.4.0"
+    "@libsql/client": "^0.6.0"
   },
   "peerDependencies": {
     "kysely": "*"

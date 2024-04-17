@@ -1,16 +1,16 @@
-import * as hrana from "@libsql/hrana-client";
+import * as libsql from "@libsql/client";
 import * as kysely from "kysely";
 
-export * as hrana from "@libsql/hrana-client";
+export * as libsql from "@libsql/client";
 
-export interface LibsqlDialectConfig {
-    client?: hrana.Client,
-    url?: string,
-    authToken?: string,
-}
+export type LibsqlDialectConfig =
+    | {
+            client: libsql.Client;
+        }
+    | libsql.Config;
 
 export class LibsqlDialect implements kysely.Dialect {
-    #config: LibsqlDialectConfig
+    #config: LibsqlDialectConfig;
 
     constructor(config: LibsqlDialectConfig) {
         this.#config = config;
@@ -21,25 +21,21 @@ export class LibsqlDialect implements kysely.Dialect {
     }
 
     createDriver(): kysely.Driver {
-        let client: hrana.Client;
+        let client: libsql.Client;
         let closeClient: boolean;
-        if (this.#config.client !== undefined) {
+        if ("client" in this.#config) {
             client = this.#config.client;
             closeClient = false;
         } else if (this.#config.url !== undefined) {
-            const parsedUrl = hrana.parseLibsqlUrl(this.#config.url)
-            const authToken = parsedUrl.authToken ?? this.#config.authToken;
-            if (parsedUrl.hranaHttpUrl !== undefined) {
-                client = hrana.openHttp(parsedUrl.hranaHttpUrl, authToken);
-            } else {
-                client = hrana.openWs(parsedUrl.hranaWsUrl!, authToken);
-            }
+            client = libsql.createClient(this.#config);
             closeClient = true;
         } else {
-            throw new Error("Please specify either `client` or `url` in the LibsqlDialect config");
+            throw new Error(
+                "Please specify either `client` or `url` in the LibsqlDialect config"
+            );
         }
 
-        return new HranaDriver(client, closeClient);
+        return new LibsqlDriver(client, closeClient);
     }
 
     createIntrospector(db: kysely.Kysely<any>): kysely.DatabaseIntrospector {
@@ -51,40 +47,37 @@ export class LibsqlDialect implements kysely.Dialect {
     }
 }
 
-export class HranaDriver implements kysely.Driver {
-    client: hrana.Client;
+export class LibsqlDriver implements kysely.Driver {
+    client: libsql.Client;
     #closeClient: boolean;
 
-    constructor(client: hrana.Client, closeClient: boolean) {
+    constructor(client: libsql.Client, closeClient: boolean) {
         this.client = client;
         this.#closeClient = closeClient;
     }
 
-    async init(): Promise<void> {
-    }
+    async init(): Promise<void> {}
 
-    async acquireConnection(): Promise<HranaConnection> {
-        return new HranaConnection(this.client.openStream());
+    async acquireConnection(): Promise<LibsqlConnection> {
+        return new LibsqlConnection(this.client);
     }
 
     async beginTransaction(
-        connection: HranaConnection,
-        _settings: kysely.TransactionSettings,
+        connection: LibsqlConnection,
+        _settings: kysely.TransactionSettings
     ): Promise<void> {
-        await connection.stream.run("BEGIN IMMEDIATE");
+        await connection.beginTransaction();
     }
 
-    async commitTransaction(connection: HranaConnection): Promise<void> {
-        await connection.stream.run("COMMIT");
+    async commitTransaction(connection: LibsqlConnection): Promise<void> {
+        await connection.commitTransaction();
     }
 
-    async rollbackTransaction(connection: HranaConnection): Promise<void> {
-        await connection.stream.run("ROLLBACK");
+    async rollbackTransaction(connection: LibsqlConnection): Promise<void> {
+        await connection.rollbackTransaction();
     }
 
-    async releaseConnection(connection: HranaConnection): Promise<void> {
-        connection.stream.close();
-    }
+    async releaseConnection(_conn: LibsqlConnection): Promise<void> {}
 
     async destroy(): Promise<void> {
         if (this.#closeClient) {
@@ -93,27 +86,56 @@ export class HranaDriver implements kysely.Driver {
     }
 }
 
-export class HranaConnection implements kysely.DatabaseConnection {
-    stream: hrana.Stream
+export class LibsqlConnection implements kysely.DatabaseConnection {
+    client: libsql.Client;
+    #transaction?: libsql.Transaction;
 
-    constructor(stream: hrana.Stream) {
-        this.stream = stream;
+    constructor(client: libsql.Client) {
+        this.client = client;
     }
 
-    async executeQuery<R>(compiledQuery: kysely.CompiledQuery): Promise<kysely.QueryResult<R>> {
-        const stmt = new hrana.Stmt(compiledQuery.sql);
-        stmt.bindIndexes(compiledQuery.parameters as Array<hrana.InValue>);
-        const rowsResult = await this.stream.query(stmt);
+    async executeQuery<R>(
+        compiledQuery: kysely.CompiledQuery
+    ): Promise<kysely.QueryResult<R>> {
+        const target = this.#transaction ?? this.client;
+        const result = await target.execute({
+            sql: compiledQuery.sql,
+            args: compiledQuery.parameters as Array<libsql.InValue>,
+        });
         return {
-            numAffectedRows: BigInt(rowsResult.affectedRowCount),
-            rows: rowsResult.rows as R[],
+            insertId: result.lastInsertRowid,
+            numAffectedRows: BigInt(result.rowsAffected),
+            rows: result.rows as Array<R>,
         };
+    }
+
+    async beginTransaction() {
+        if (this.#transaction) {
+          throw new Error("Transaction already in progress");
+        }
+        this.#transaction = await this.client.transaction();
+    }
+
+    async commitTransaction() {
+        if (!this.#transaction) {
+            throw new Error("No transaction to commit");
+        }
+        await this.#transaction.commit();
+        this.#transaction = undefined;
+    }
+
+    async rollbackTransaction() {
+        if (!this.#transaction) {
+            throw new Error("No transaction to rollback");
+        }
+        await this.#transaction.rollback();
+        this.#transaction = undefined;
     }
 
     async *streamQuery<R>(
         _compiledQuery: kysely.CompiledQuery,
-        _chunkSize: number,
+        _chunkSize: number
     ): AsyncIterableIterator<kysely.QueryResult<R>> {
-        throw new Error("Hrana protocol does not support streaming yet");
+        throw new Error("Libsql Driver does not support streaming yet");
     }
 }

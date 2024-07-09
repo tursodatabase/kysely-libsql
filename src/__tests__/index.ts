@@ -1,7 +1,7 @@
 import { Kysely, Generated, sql } from "kysely";
-import { LibsqlDialect, hrana } from "..";
+import { LibsqlDialect } from "..";
 
-const url = process.env.URL ?? "ws://localhost:8080";
+const url = process.env.URL ?? "file:test.db";
 
 function withDb(callback: (db: Kysely<Database>) => Promise<void>): () => Promise<void> {
     return async () => {

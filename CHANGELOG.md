@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 -- 2024-07-09
+
+- Use @libsql/client instead of @libsql/hrana-client.
 
 ## 0.3.0 -- 2023-06-12
 

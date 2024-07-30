@@ -42,7 +42,7 @@
     "test": "jest --runInBand"
   },
   "dependencies": {
-    "@libsql/client": "^0.6.0"
+    "@libsql/client": "^0.8.0"
   },
   "peerDependencies": {
     "kysely": "*"

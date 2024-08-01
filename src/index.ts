@@ -1,8 +1,6 @@
 import * as libsql from "@libsql/client";
 import * as kysely from "kysely";
 
-export * as libsql from "@libsql/client";
-
 export type LibsqlDialectConfig =
     | {
             client: libsql.Client;

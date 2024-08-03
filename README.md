@@ -1,10 +1,9 @@
 # kysely-libsql
 
-A [Kysely][kysely] dialect for [libSQL/sqld][sqld], using the [Hrana][hrana-client-ts] protocol over a WebSocket.
+A [Kysely][kysely] dialect for [libSQL][libsql], compatible with [@libsql/client][libsql-client-ts].
 
 [kysely]: https://github.com/koskimas/kysely
-[sqld]: https://github.com/libsql/sqld
-[hrana-client-ts]: https://github.com/libsql/hrana-client-ts
+[libsql]: https://github.com/tursodatabase/libsql
 
 ## Installation
 
@@ -32,14 +31,14 @@ const db = new Kysely<Database>({
 });
 ```
 
-Instead of a `url`, you can also pass an instance of `Client` from [`@libsql/hrana-client`][hrana-client-ts] as `client`:
+Instead of a `url`, you can also pass an existing `Client` from [`@libsql/client`][libsql-client-ts]:
 
 ```typescript
-import * as hrana from "@libsql/hrana-client";
-// Alternatively, the `kysely-libsql` package reexports the `hrana-client`
-//import { hrana } from "@libsql/kysely-libsql";
+import { createClient } from "@libsql/client";
 
-const client = hrana.open("ws://localhost:2023");
+const client = createClient({
+    url: "libsql://localhost:8080",
+});
 
 const db = new Kysely<Database>({
     dialect: new LibsqlDialect({ client }),
@@ -49,18 +48,12 @@ const db = new Kysely<Database>({
 client.close();
 ```
 
-## Supported URLs
+## Supported Configuration Options
 
-The library accepts the [same URL schemas][supported-urls] as [`@libsql/client`][libsql-client-ts] except `file:`:
+The library accepts the exact same [options][client-options] as [`@libsql/client`][libsql-client-ts].
 
-- `http://` and `https://` connect to a libsql server over HTTP,
-- `ws://` and `wss://` connect to the server over WebSockets,
-- `libsql://` connects to the server using the default protocol (which is now HTTP). `libsql://` URLs use TLS by default, but you can use `?tls=0` to disable TLS (e.g. when you run your own instance of the server locally).
-
-Connecting to a local SQLite file using `file:` URL is not supported; we suggest that you use the native Kysely dialect for SQLite.
-
-[libsql-client-ts]: https://github.com/libsql/libsql-client-ts
-[supported-urls]: https://github.com/libsql/libsql-client-ts#supported-urls
+[libsql-client-ts]: https://github.com/tursodatabase/libsql-client-ts
+[client-options]: https://docs.turso.tech/sdk/ts/reference#initializing
 
 ## License
 

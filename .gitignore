@@ -4,4 +4,4 @@ node_modules
 /example/package-lock.json
 *.tsbuildinfo
 Session.vim
-/test.db
+test.db

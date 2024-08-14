@@ -15,7 +15,7 @@ interface BookTable {
 async function example() {
     const db = new Kysely<Database>({
         dialect: new LibsqlDialect({
-            url: "ws://localhost:8080",
+            url: "file:test.db",
         }),
     });
 

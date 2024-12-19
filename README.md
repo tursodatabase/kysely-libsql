@@ -1,6 +1,7 @@
 # kysely-libsql
 
-A [Kysely][kysely] dialect for [libSQL][libsql], compatible with [@libsql/client][libsql-client-ts].
+A [Kysely][kysely] dialect for [libSQL][libsql], compatible with
+[@libsql/client][libsql-client-ts].
 
 [kysely]: https://github.com/koskimas/kysely
 [libsql]: https://github.com/tursodatabase/libsql
@@ -13,7 +14,8 @@ npm install @libsql/kysely-libsql
 
 ## Usage
 
-Pass a `LibsqlDialect` instance as the `dialect` when creating the `Kysely` object:
+Pass a `LibsqlDialect` instance as the `dialect` when creating the `Kysely`
+object:
 
 ```typescript
 import { Kysely } from "kysely";
@@ -31,7 +33,8 @@ const db = new Kysely<Database>({
 });
 ```
 
-Instead of a `url`, you can also pass an existing `Client` from [`@libsql/client`][libsql-client-ts]:
+Instead of a `url`, you can also pass an existing `Client` from
+[`@libsql/client`][libsql-client-ts]:
 
 ```typescript
 import { createClient } from "@libsql/client";
@@ -48,9 +51,25 @@ const db = new Kysely<Database>({
 client.close();
 ```
 
+Or pass a `createClient` function to have Kysely manage the client's lifecycle.
+
+```typescript
+import { createClient } from "@libsql/client";
+
+const db = new Kysely<Database>({
+    createClient: () =>
+        createClient({
+            url: "file:local.db",
+            syncUrl: "libsql://localhost:8080",
+            authToken: "<token>",
+        }),
+});
+```
+
 ## Supported Configuration Options
 
-The library accepts the exact same [options][client-options] as [`@libsql/client`][libsql-client-ts].
+The library accepts the exact same [options][client-options] as
+[`@libsql/client`][libsql-client-ts].
 
 [libsql-client-ts]: https://github.com/tursodatabase/libsql-client-ts
 [client-options]: https://docs.turso.tech/sdk/ts/reference#initializing
@@ -61,4 +80,6 @@ This project is licensed under the MIT license.
 
 ### Contribution
 
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in `@libsql/kysely-libsql` by you, shall be licensed as MIT, without any additional terms or conditions.
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in `@libsql/kysely-libsql` by you, shall be licensed as MIT,
+without any additional terms or conditions.

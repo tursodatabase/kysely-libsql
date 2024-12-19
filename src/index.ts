@@ -2,9 +2,7 @@ import * as libsql from "@libsql/client";
 import * as kysely from "kysely";
 
 export type LibsqlDialectConfig =
-    | {
-            client: libsql.Client;
-        }
+    | { client: libsql.Client, autoClose?: boolean }
     | libsql.Config;
 
 export class LibsqlDialect implements kysely.Dialect {
@@ -23,13 +21,13 @@ export class LibsqlDialect implements kysely.Dialect {
         let closeClient: boolean;
         if ("client" in this.#config) {
             client = this.#config.client;
-            closeClient = false;
+            closeClient = this.#config.autoClose ?? false;
         } else if (this.#config.url !== undefined) {
             client = libsql.createClient(this.#config);
             closeClient = true;
         } else {
             throw new Error(
-                "Please specify either `client` or `url` in the LibsqlDialect config"
+                "Please specify either `client`, `url` in the LibsqlDialect config"
             );
         }
 
@@ -109,7 +107,7 @@ export class LibsqlConnection implements kysely.DatabaseConnection {
 
     async beginTransaction() {
         if (this.#transaction) {
-          throw new Error("Transaction already in progress");
+            throw new Error("Transaction already in progress");
         }
         this.#transaction = await this.client.transaction();
     }
